@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  app:
+    build:
+      context: ./node
+    container_name: app
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+    volumes:
+      - ./node:/usr/src/app
+    tty: true
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    networks:
+      - node-network
+  db:
+    image: mariadb:latest
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MARIADB_DATABASE=nodedb
+      - MARIADB_ROOT_PASSWORD=root
+      - MARIADB_USER=allan
+      - MARIADB_PASSWORD=admin
+    ports:
+      - 3307:3306
+    networks:
+      - node-network
+networks:
+  node-network:
+    driver: bridge
